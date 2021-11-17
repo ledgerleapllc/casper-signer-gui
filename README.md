@@ -1,2 +1,43 @@
-# casper-signerr-gui
-Typescript implementation of the Casper Node Signer/Verifier tool that generates a signature in hexidecimal format using a validator's keys for the purpose of providing proof of ownership of a node to the Casper Association.
+<p align="center">
+	<img src="https://ledgerleap.com/web/images/casper-signer-gui.png" width="150">
+</p>
+
+## Casper Node Signer/Verifier GUI
+
+A much more user friendly implementation of the old python3 signer. Used for providing signatures as proof of ownership to the Casper Association.
+
+### Requirements
+
+* Supports macOS 10.10
+* CMake 3.1+
+* Make, GCC v7
+* NodeJs 14.x
+
+### Setup
+
+```bash
+git clone https://github.com/ledgerleapllc/casper-signer-gui.git
+cd casper-signer-gui/
+npm install
+npm start
+```
+
+### Usage
+
+Once the GUI pops up, specify the path to your **message.txt** file that you downloaded from the Casper Asscoiation. Specify your public validator ID (hex string). Specify the path to your secret key PEM file. Click 
+
+### SECP256k1 Support
+
+Not yet supported. Coming soon.
+
+### Resources for Learning NodeGui
+
+- [docs.nodegui.org](https://nodegui.github.io/nodegui) - all of NodeGui and React Desktop's documentation
+
+### Packaging app as a distributable
+
+In order to distribute your finished app, you can use [@nodegui/packer](https://github.com/nodegui/packer)
+
+## License
+
+Apache2

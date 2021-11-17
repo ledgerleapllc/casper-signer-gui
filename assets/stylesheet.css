@@ -1,0 +1,75 @@
+#app {
+  padding: 35px;
+  background-color: #DCDEE6;
+  height: 550px;
+  width: 700px;
+  align-items: 'center';
+  justify-content: 'center';
+}
+
+#label-message,
+#label-public,
+#label-secret {
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0;
+  margin-top: 12px;
+}
+
+#label-header {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0;
+  margin-bottom: 3px;
+  width: '100%';
+}
+
+#label-subheader {
+  font-size: 15px;
+  padding: 0;
+  margin-bottom: 15px;
+  width: '100%';
+}
+
+#signature {
+  font-size: 16px;
+  padding: 6px 12px;
+  color: #212121;
+  width: '100%';
+}
+
+#input-message,
+#input-public,
+#input-secret {
+  font-size: 16px;
+  padding: 6px 12px;
+  color: #212121;
+  border-radius: 3px;
+  background-color: #C1C5D2;
+  width: 400px;
+  outline: none;
+}
+
+#submit-btn {
+  background-color: #7db700;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  border-radius: 3px;
+  border: 2px solid #7db700;
+  outline: none !important;
+  min-width: 90px;
+  margin-top: 6px;
+}
+
+#submit-btn:hover,
+#submit-btn:active,
+#submit-btn:focus {
+  border: 2px solid #7bb500;
+  background-color: #7bb500 !important;
+}
+
+#cancel-btn {
+  background-color: #c91f37;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "casper-signer-gui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Thomas S <thomas@ledgerleap.com>",
+  "license": "Apache2",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack && qode ./dist/index.js",
+    "debug": "webpack && qode --inspect ./dist/index.js"
+  },
+  "dependencies": {
+    "@nodegui/nodegui": "^0.36.0",
+    "asn1-parser": "^1.1.8",
+    "crypto": "^1.0.1",
+    "noble-ed25519": "^1.2.6"
+  },
+  "devDependencies": {
+    "@nodegui/packer": "^1.4.1",
+    "@types/node": "^16.11.7",
+    "clean-webpack-plugin": "^3.0.0",
+    "file-loader": "^6.2.0",
+    "native-addon-loader": "^2.0.1",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.3.5",
+    "webpack": "^5.49.0",
+    "webpack-cli": "^4.7.2"
+  }
+}
