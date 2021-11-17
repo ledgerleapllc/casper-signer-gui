@@ -8,7 +8,7 @@ import {
   QLineEdit
 } from '@nodegui/nodegui';
 
-import logo from '../assets/favicon32x32.png';
+import logo from '../assets/favicon.png';
 import * as ed from 'noble-ed25519';
 import * as asn from 'asn1-parser';
 import * as crypto from 'crypto';
