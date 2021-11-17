@@ -301,7 +301,7 @@ button.addEventListener('clicked', async () => {
 });
 
 
-// inti
+// initialize
 rootLayout.addWidget(label_header);
 rootLayout.addWidget(label_subheader);
 rootLayout.addWidget(label_message);
