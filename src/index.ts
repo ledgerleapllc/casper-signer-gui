@@ -151,7 +151,7 @@ const pem_to_bytes = (
     }
   }
 
-  return Uint8Array(32);
+  return new Uint8Array(32);
 }
 
 
