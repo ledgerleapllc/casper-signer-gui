@@ -24,7 +24,7 @@ npm start
 
 ### Usage
 
-Once the GUI pops up, specify the path to your **message.txt** file that you downloaded from the Casper Asscoiation. Specify your public validator ID (hex string). Specify the path to your secret key PEM file. Click **Create My Signature**. If successful (keys and validator ID match), then the widget will output your signature file to your home DIR **~/signature.txt**. From there, simply upload the signature to the Casper Association portal.
+Once the GUI pops up, specify the path to your **message.txt** file that you downloaded from the Casper Association. Specify your public validator ID (hex string). Specify the path to your secret key PEM file. Click **Create My Signature**. If successful (keys and validator ID match), then the widget will output your signature file to your home DIR **~/signature.txt**. From there, simply upload the signature to the Casper Association portal.
 
 <p align="center">
 	<img src="https://ledgerleap.com/web/images/casper-signer-gui-sample.png" width="560">
