@@ -286,7 +286,7 @@ button.addEventListener('clicked', async () => {
   // check signature
   if(sig.length == 128) {
     fs.writeFileSync(
-      homedir + '/a-signature.txt',
+      homedir + '/signature.txt',
       sig
     );
 

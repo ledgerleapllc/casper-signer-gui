@@ -8,7 +8,9 @@
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack && qode ./dist/index.js",
-    "debug": "webpack && qode --inspect ./dist/index.js"
+    "debug": "webpack && qode --inspect ./dist/index.js",
+    "pack": "npm install @nodegui/packer && npx nodegui-packer --init casper-signer-gui",
+    "deploy": "npx nodegui-packer --pack ./dist",
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.36.0",
@@ -17,7 +19,7 @@
     "noble-ed25519": "^1.2.6"
   },
   "devDependencies": {
-    "@nodegui/packer": "^1.4.1",
+    "@nodegui/packer": "^1.5.0",
     "@types/node": "^16.11.7",
     "clean-webpack-plugin": "^3.0.0",
     "file-loader": "^6.2.0",
