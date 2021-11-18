@@ -221,11 +221,14 @@ button.addEventListener('clicked', async () => {
   var content_secret = '';
 
   var length = 66;
+  var sig = null;
 
   if(is_secp256k1) {
     length = 68;
   }
 
+
+  // handle message
   try {
     content_message = fs.readFileSync(
       value_message,
@@ -239,6 +242,8 @@ button.addEventListener('clicked', async () => {
     return false;
   }
 
+
+  // handle public key
   if(content_public == '') {
     signature.setText('Please enter your validator ID');
     return false;
@@ -248,6 +253,8 @@ button.addEventListener('clicked', async () => {
     return 'Invalid validator ID. Expecting a '+length+' character hexadecimal string';
   }
 
+
+  // handle secret key
   try {
     content_secret = fs.readFileSync(
       value_secret,
@@ -261,9 +268,10 @@ button.addEventListener('clicked', async () => {
     return false;
   }
 
-  var sig = null;
   var secret_bytes = pem_to_bytes(content_secret);
 
+
+  // handle signature
   try {
     sig = await ed.sign(
       content_message, 
@@ -274,18 +282,34 @@ button.addEventListener('clicked', async () => {
     return false;
   }
 
+
+  // check signature
   if(sig.length == 128) {
     fs.writeFileSync(
       homedir + '/a-signature.txt',
       sig
     );
 
-    var public_key = await get_public_key(secret_bytes)
+    // match public key
+    var derived_public_key = await get_public_key(secret_bytes);
+    derived_public_key = Buffer.from(derived_public_key).toString('hex');
+    var user_public_key = content_public.slice(2).toLowerCase();
+
+    if(DEV_MODE) {
+      console.log(derived_public_key);
+      console.log(user_public_key);
+    }
+
+    if(derived_public_key !== user_public_key) {
+      signature.setText('Validator ID does not match the one derived from your secret key');
+      return false;
+    }
+
     var verified_text = '';
     var verified = await verify(
       sig, 
       content_message, 
-      public_key
+      derived_public_key
     );
 
     if(verified) {
