@@ -32,7 +32,7 @@ Once the GUI pops up, specify the path to your **message.txt** file that you dow
 
 ### SECP256k1 Support
 
-Not yet supported. Coming soon.
+Now supported as of 11/18/2021. SECP256k1 validator IDs always begin with a **02** byte. The program will automatically detect this and interpret your keys and signature as being derived using this type curve.
 
 ### Resources for Learning NodeGui
 
