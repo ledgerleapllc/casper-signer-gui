@@ -250,7 +250,8 @@ button.addEventListener('clicked', async () => {
   }
 
   if(!verify_public_key(content_public, length)) {
-    return 'Invalid validator ID. Expecting a '+length+' character hexadecimal string';
+    signature.setText('Invalid validator ID. Expecting a '+length+' character hex string');
+    return false;
   }
 
 
