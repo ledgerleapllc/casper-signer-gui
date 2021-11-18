@@ -1,8 +1,8 @@
 #app {
   padding: 35px;
   background-color: #DCDEE6;
-  height: 550px;
-  width: 700px;
+  height: 560px;
+  width: 720px;
   align-items: 'center';
   justify-content: 'center';
 }
@@ -43,6 +43,7 @@
   padding: 6px 12px;
   color: #212121;
   width: '100%';
+  height: 49px;
 }
 
 #input-message,
