@@ -23,7 +23,7 @@ ed.utils.sha512 = async (message) => {
 
 exports.crypto;
 
-const DEV_MODE = true;
+const DEV_MODE = false;
 const homedir = require('os').homedir();
 
 
@@ -503,7 +503,7 @@ root_layout.addWidget(signature);
 // show window
 win.setCentralWidget(root_widget);
 win.setStyleSheet(stylesheet);
-win.setFixedSize(700, 550);
+win.setFixedSize(720, 560);
 win.show();
 
 input_public.setFocus();
