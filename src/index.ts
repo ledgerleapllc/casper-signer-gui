@@ -7,11 +7,13 @@ import {
   QPushButton,
   QIcon,
   QLineEdit,
-  QFileDialog
+  QFileDialog,
+  QRadioButton
 } from '@nodegui/nodegui';
 
 import logo from '../assets/favicon.png';
 import * as ed from 'noble-ed25519';
+import * as secp from 'secp256k1';
 import * as asn from 'asn1-parser';
 import * as crypto from 'crypto';
 
@@ -22,9 +24,6 @@ ed.utils.sha512 = async (message) => {
 exports.crypto;
 
 const DEV_MODE = false;
-
-var is_secp256k1 = false;
-
 const homedir = require('os').homedir();
 
 
@@ -40,49 +39,78 @@ const stylesheet = fs.readFileSync(
 
 
 // helper functions
-const verify = async(
-  signature: string, 
-  orig_msg: string, 
-  public_key: string
+const string_to_bytearray = (
+  s: string
 ) => {
-  var verified = await ed.verify(
-    signature, 
-    orig_msg, 
-    public_key
-  );
+  var b = Buffer.from(s);
+  var ba = [];
 
-  if(verified) {
-    return true
+  for(var i = 0; i < b.length; i++) {
+    ba.push(b[i]);
+  }
+
+  return(new Uint8Array(ba))
+}
+
+const get_key_type = (
+  pk: string
+) => {
+  let firstbyte = pk.slice(0, 2);
+
+  if(firstbyte == '02') {
+    return true;
   }
 
   return false;
 }
 
-const get_public_key = async(
+const get_public_key_ed = async(
   sk: string
 ) => {
   var pk = await ed.getPublicKey(sk);
   return pk;
 }
 
-const verify_public_key = (
-  _k: string,
-  length: number
+const get_public_key_secp = async(
+  sk: string
 ) => {
-  let size = _k.length;
-  let firstbyte = _k.slice(0, 2);
+  var pk = await secp.publicKeyCreate(sk);
+  return pk;
+}
 
-  if(firstbyte == '01') {
-    length = 66;
-  } else if(firstbyte == '02') {
-    length = 68;
-  } else {
+const verify_public_key_ed = (
+  pk: string
+) => {
+  let size = pk.length;
+  let firstbyte = pk.slice(0, 2);
+
+  if(firstbyte != '01') {
     return false;
   }
 
   if(
-    size != length ||
-    !(/^[0-9a-fA-F]+$/).test(_k)
+    size != 66 ||
+    !(/^[0-9a-fA-F]+$/).test(pk)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+const verify_public_key_secp = (
+  pk: string
+) => {
+  let size = pk.length;
+  let firstbyte = pk.slice(0, 2);
+
+  if(firstbyte != '02') {
+    return false;
+  }
+
+  if(
+    size != 68 ||
+    !(/^[0-9a-fA-F]+$/).test(pk)
   ) {
     return false;
   }
@@ -91,9 +119,9 @@ const verify_public_key = (
 }
 
 const verify_secret_key = (
-  _k: Uint8Array
+  sk: Uint8Array
 ) => {
-  let size = _k.length;
+  let size = sk.length;
 
   if(size != 32) {
     return false;
@@ -145,6 +173,14 @@ const pem_to_bytes = (
   return new Uint8Array(32);
 }
 
+const sleep = async(
+  delay: number
+) => {
+  return new Promise(resolve =>
+    setTimeout(resolve, delay)
+  );
+}
+
 
 // initialize
 const win = new QMainWindow();
@@ -178,7 +214,7 @@ root_layout.addWidget(label_public);
 const input_public = new QLineEdit();
 input_public.setObjectName('input-public');
 input_public.setPlaceholderText('Your validator ID');
-if(DEV_MODE) input_public.setText('01bee8817a99d8a1cf23434c5b25a90dba00947d2d4a0a827aa1eca60da0ee22b8');
+if(DEV_MODE) input_public.setText('0202968fc8ad12fc23d4c0908580ba6be4a7d5c823d032a5f403e71daecc2d2ae607');
 root_layout.addWidget(input_public);
 
 
@@ -235,7 +271,7 @@ root_layout.addWidget(container_secret, container_secret.getFlexNode());
 const input_secret = new QLineEdit();
 input_secret.setObjectName('input-secret');
 input_secret.setPlaceholderText('Path to your secret key file');
-if(DEV_MODE) input_secret.setText(homedir+'/git/casper/caspersignerverifier/test/test.secret.key');
+if(DEV_MODE) input_secret.setText(homedir+'/git/casper/caspersignerverifier/test/secp256k1.secret.key');
 else input_secret.setText('/etc/casper/validator_keys/secret_key.pem');
 layout_secret.addWidget(input_secret);
 
@@ -266,20 +302,45 @@ submit_button.addEventListener('clicked', async () => {
   var value_message = input_message.text();
   var content_public = input_public.text();
   var value_secret = input_secret.text();
+  var is_secp256k1 = get_key_type(content_public);
 
   value_message = value_message.replace('~', homedir);
   value_secret = value_secret.replace('~', homedir);
-  // is_secp256k1 = checkbox.isChecked();
-  is_secp256k1 = false;
 
+  var hashed_msg = new Uint8Array();
   var content_message = '';
   var content_secret = '';
 
-  var length = 66;
   var sig = null;
+  var verified = false;
+  var verified_text = '';
+
+  signature.setText('');
+  await sleep(100);
+
+
+  // handle public key
+  if(content_public == '') {
+    signature.setText('Please enter your validator ID');
+    return false;
+  }
 
   if(is_secp256k1) {
-    length = 68;
+    if(!verify_public_key_secp(content_public)) {
+      signature.setText('Invalid validator ID. Expecting a 68 character hex string');
+      return false;
+    }
+
+    hashed_msg = Uint8Array.from(
+      crypto.createHash('sha256')
+        .update(string_to_bytearray(content_message))
+        .digest()
+    );
+  } else {
+    if(!verify_public_key_ed(content_public)) {
+      signature.setText('Invalid validator ID. Expecting a 66 character hex string');
+      return false;
+    }
   }
 
 
@@ -294,18 +355,6 @@ submit_button.addEventListener('clicked', async () => {
     );
   } catch(err) {
     signature.setText('Cannot find message file: '+value_message);
-    return false;
-  }
-
-
-  // handle public key
-  if(content_public == '') {
-    signature.setText('Please enter your validator ID');
-    return false;
-  }
-
-  if(!verify_public_key(content_public, length)) {
-    signature.setText('Invalid validator ID. Expecting a '+length+' character hex string');
     return false;
   }
 
@@ -328,56 +377,117 @@ submit_button.addEventListener('clicked', async () => {
 
 
   // handle signature
-  try {
-    sig = await ed.sign(
-      content_message, 
-      secret_bytes
-    );
-  } catch(err) {
-    signature.setText('Invalid secret key');
-    return false;
+  if(is_secp256k1) {
+    try {
+      sig = secp.ecdsaSign(
+        hashed_msg,
+        secret_bytes
+      );
+      sig = sig.signature;
+    } catch(err) {
+      // console.log(err);
+      signature.setText('Invalid secret key');
+      return false;
+    }
+  } else {
+    try {
+      sig = await ed.sign(
+        content_message, 
+        secret_bytes
+      );
+    } catch(err) {
+      // console.log(err);
+      signature.setText('Invalid secret key');
+      return false;
+    }
   }
 
 
   // check signature
-  if(sig.length == 128) {
-    fs.writeFileSync(
-      homedir + '/signature.txt',
-      sig
-    );
+  if(is_secp256k1) {
+    if(sig.length == 64) {
+      fs.writeFileSync(
+        homedir + '/signature.txt',
+        Buffer.from(sig).toString('hex')
+      );
 
-    // match public key
-    var derived_public_key = await get_public_key(secret_bytes);
-    derived_public_key = Buffer.from(derived_public_key).toString('hex');
-    var user_public_key = content_public.slice(2).toLowerCase();
+      // match public key
+      let derived_public_key = await get_public_key_secp(secret_bytes);
+      let user_public_key = content_public.slice(2).toLowerCase();
 
-    if(DEV_MODE) {
-      console.log(derived_public_key);
-      console.log(user_public_key);
-    }
+      if(DEV_MODE) {
+        console.log('derived_public_key: '+Buffer.from(derived_public_key).toString('hex'));
+        console.log('user_public_key:    '+user_public_key);
+      }
 
-    if(derived_public_key !== user_public_key) {
-      signature.setText('Validator ID does not match the one derived from your secret key');
+      if(Buffer.from(derived_public_key).toString('hex') !== user_public_key) {
+        signature.setText('Validator ID does not match the one derived from your secret key');
+        return false;
+      }
+
+      try {
+        verified = await secp.ecdsaVerify(
+          sig, 
+          hashed_msg, 
+          derived_public_key
+        );
+      } catch(err) {
+        // console.log(err);
+        verified = false;
+      }
+
+    } else {
+      signature.setText('Invalid secret key');
+      verified = false;
       return false;
     }
-
-    var verified_text = '';
-    var verified = await verify(
-      sig, 
-      content_message, 
-      derived_public_key
-    );
-
-    if(verified) {
-      verified_text = '<br><small><span style="color:green;">Signature verified</span></small>';
-    } else {
-      verified_text = '<br><small><span style="color:red;">Signature not verified</span></small>';
-    }
-
-    signature.setText("Success! Your signature has been written to ~/signature.txt"+verified_text);
   } else {
-    signature.setText('Invalid secret key');
+    if(sig.length == 128) {
+      fs.writeFileSync(
+        homedir + '/signature.txt',
+        sig
+      );
+
+      // match public key
+      let derived_public_key = await get_public_key_ed(secret_bytes);
+      derived_public_key = Buffer.from(derived_public_key).toString('hex');
+      let user_public_key = content_public.slice(2).toLowerCase();
+
+      if(DEV_MODE) {
+        console.log('derived_public_key: '+derived_public_key);
+        console.log('user_public_key:    '+user_public_key);
+      }
+
+      if(derived_public_key !== user_public_key) {
+        signature.setText('Validator ID does not match the one derived from your secret key');
+        return false;
+      }
+
+      try {
+        verified = await ed.verify(
+          sig, 
+          content_message, 
+          derived_public_key
+        );
+      } catch(err) {
+        // console.log(err);
+        verified = false;
+      }
+
+    } else {
+      signature.setText('Invalid secret key');
+      verified = false;
+      return false;
+    }
   }
+
+  if(verified) {
+    verified_text = '<br><small><span style="color:green;">Signature verified</span></small>';
+  } else {
+    verified_text = '<br><small><span style="color:red;">Signature not verified</span></small>';
+  }
+
+  signature.setText("Success! Your signature has been written to ~/signature.txt"+verified_text);
 });
 
 root_layout.addWidget(submit_button);
@@ -393,6 +503,7 @@ root_layout.addWidget(signature);
 // show window
 win.setCentralWidget(root_widget);
 win.setStyleSheet(stylesheet);
+win.setFixedSize(720, 560);
 win.show();
 
 input_public.setFocus();
