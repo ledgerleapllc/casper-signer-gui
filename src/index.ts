@@ -19,7 +19,7 @@ ed.utils.sha512 = async (message) => {
 
 exports.crypto;
 
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 
 // layout
