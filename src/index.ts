@@ -2,10 +2,12 @@ import {
   QMainWindow, 
   QWidget, 
   QLabel, 
-  FlexLayout, 
+  FlexLayout,
+  QBoxLayout, 
   QPushButton,
   QIcon,
-  QLineEdit
+  QLineEdit,
+  QFileDialog
 } from '@nodegui/nodegui';
 
 import logo from '../assets/favicon.png';
@@ -20,17 +22,6 @@ ed.utils.sha512 = async (message) => {
 exports.crypto;
 
 const DEV_MODE = false;
-
-
-// layout
-const win = new QMainWindow();
-win.setWindowTitle("Casper Node Signer");
-
-const centralWidget = new QWidget();
-centralWidget.setObjectName("app");
-
-const rootLayout = new FlexLayout();
-centralWidget.setLayout(rootLayout);
 
 var is_secp256k1 = false;
 
@@ -48,7 +39,7 @@ const stylesheet = fs.readFileSync(
 );
 
 
-// functions
+// helper functions
 const verify = async(
   signature: string, 
   orig_msg: string, 
@@ -155,59 +146,123 @@ const pem_to_bytes = (
 }
 
 
+// initialize
+const win = new QMainWindow();
+win.setWindowTitle("Casper Node Signer");
+
+
 // header
+const root_widget = new QWidget();
+const root_layout = new FlexLayout();
+root_layout.setFlexNode(root_widget.getFlexNode());
+root_widget.setObjectName("app");
+root_widget.setLayout(root_layout);
+
 const label_header = new QLabel();
 label_header.setObjectName("label-header");
 label_header.setText("Casper Node Signer");
+root_layout.addWidget(label_header);
 
 const label_subheader = new QLabel();
 label_subheader.setObjectName("label-subheader");
 label_subheader.setText("Use this form to generate a unique signature used to verify ownership of your node.");
+root_layout.addWidget(label_subheader);
 
 
-// labels
-const label_message = new QLabel();
-label_message.setObjectName("label-message");
-label_message.setText("Please specify your message file");
-
+// first row
 const label_public = new QLabel();
 label_public.setObjectName("label-public");
 label_public.setText("Please enter your validator ID (hex)");
-
-const label_secret = new QLabel();
-label_secret.setObjectName("label-secret");
-label_secret.setText("Please specify the path to your secret key<br><small>(default: /etc/casper/validator_keys/secret_key.pem)</small>");
-
-
-// inputs
-const input_message = new QLineEdit();
-input_message.setObjectName('input-message');
-input_message.setPlaceholderText('Path to your downloaded message file');
-input_message.setText('~/Downloads/message.txt');
+root_layout.addWidget(label_public);
 
 const input_public = new QLineEdit();
 input_public.setObjectName('input-public');
 input_public.setPlaceholderText('Your validator ID');
 if(DEV_MODE) input_public.setText('01bee8817a99d8a1cf23434c5b25a90dba00947d2d4a0a827aa1eca60da0ee22b8');
+root_layout.addWidget(input_public);
+
+
+// second row
+const label_message = new QLabel();
+label_message.setObjectName("label-message");
+label_message.setText("Please specify your message file");
+root_layout.addWidget(label_message);
+
+const container_message = new QWidget();
+const layout_message = new FlexLayout();
+layout_message.setFlexNode(container_message.getFlexNode());
+container_message.setObjectName("container_message");
+container_message.setLayout(layout_message);
+root_layout.addWidget(container_message, container_message.getFlexNode());
+
+const input_message = new QLineEdit();
+input_message.setObjectName('input-message');
+input_message.setPlaceholderText('Path to your downloaded message file');
+input_message.setText('~/Downloads/message.txt');
+layout_message.addWidget(input_message);
+
+const filemodal_message = new QFileDialog();
+// filemodal_message.setFileMode(FileMode.AnyFile);
+filemodal_message.setNameFilter('Text (*.txt)');
+
+const filebtn_message = new QPushButton();
+filebtn_message.setText('Browse');
+filebtn_message.setObjectName('message-btn');
+
+filebtn_message.addEventListener('clicked', () => {
+  filemodal_message.exec();
+  let selectedFiles = filemodal_message.selectedFiles();
+  //console.log(selectedFiles);
+  input_message.setText(selectedFiles[0]);
+});
+
+layout_message.addWidget(filebtn_message);
+
+
+// third row
+const label_secret = new QLabel();
+label_secret.setObjectName("label-secret");
+label_secret.setText("Please specify the path to your secret key<br><small>(default: /etc/casper/validator_keys/secret_key.pem)</small>");
+root_layout.addWidget(label_secret);
+
+const container_secret = new QWidget();
+const layout_secret = new FlexLayout();
+layout_secret.setFlexNode(container_secret.getFlexNode());
+container_secret.setObjectName("container_secret");
+container_secret.setLayout(layout_secret);
+root_layout.addWidget(container_secret, container_secret.getFlexNode());
 
 const input_secret = new QLineEdit();
 input_secret.setObjectName('input-secret');
 input_secret.setPlaceholderText('Path to your secret key file');
 if(DEV_MODE) input_secret.setText(homedir+'/git/casper/caspersignerverifier/test/test.secret.key');
 else input_secret.setText('/etc/casper/validator_keys/secret_key.pem');
+layout_secret.addWidget(input_secret);
 
-// signature
-const signature = new QLabel();
-signature.setObjectName('signature');
-signature.setText('');
+const filemodal_secret = new QFileDialog();
+// filemodal_secret.setFileMode(FileMode.AnyFile);
+filemodal_secret.setNameFilter('Pem key (*.pem, *.key)');
+
+const filebtn_secret = new QPushButton();
+filebtn_secret.setText('Browse');
+filebtn_secret.setObjectName('message-btn');
+
+filebtn_secret.addEventListener('clicked', () => {
+  filemodal_secret.exec();
+  let selectedFiles = filemodal_secret.selectedFiles();
+  //console.log(selectedFiles);
+  input_secret.setText(selectedFiles[0]);
+});
+
+layout_secret.addWidget(filebtn_secret);
 
 
-// buttons
-const button = new QPushButton();
-button.setText('Create My Signature');
-button.setObjectName('submit-btn');
+// submit button
+const submit_button = new QPushButton();
+submit_button.setText('Create My Signature');
+submit_button.setObjectName('submit-btn');
 
-button.addEventListener('clicked', async () => {
+submit_button.addEventListener('clicked', async () => {
   var value_message = input_message.text();
   var content_public = input_public.text();
   var value_secret = input_secret.text();
@@ -325,21 +380,19 @@ button.addEventListener('clicked', async () => {
   }
 });
 
+root_layout.addWidget(submit_button);
 
-// initialize
-rootLayout.addWidget(label_header);
-rootLayout.addWidget(label_subheader);
-rootLayout.addWidget(label_message);
-rootLayout.addWidget(input_message);
-rootLayout.addWidget(label_public);
-rootLayout.addWidget(input_public);
-rootLayout.addWidget(label_secret);
-rootLayout.addWidget(input_secret);
-rootLayout.addWidget(button);
-rootLayout.addWidget(signature);
-win.setCentralWidget(centralWidget);
+
+// signature message field
+const signature = new QLabel();
+signature.setObjectName('signature');
+signature.setText('');
+root_layout.addWidget(signature);
+
+
+// show window
+win.setCentralWidget(root_widget);
 win.setStyleSheet(stylesheet);
-
 win.show();
 
 input_public.setFocus();

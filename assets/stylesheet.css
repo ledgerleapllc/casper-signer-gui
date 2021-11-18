@@ -7,6 +7,13 @@
   justify-content: 'center';
 }
 
+#container_message,
+#container_secret {
+  padding: 0; margin: 0;
+  background: transparent;
+  flex-direction: row;
+}
+
 #label-message,
 #label-public,
 #label-secret {
@@ -61,6 +68,20 @@
   outline: none !important;
   min-width: 90px;
   margin-top: 6px;
+}
+
+#message-btn,
+#secert-btn {
+  background-color: #7db700;
+  padding: 6px 12px;
+  font-size: 15px;
+  font-weight: 400;
+  color: white;
+  border-radius: 3px;
+  border: 2px solid #7db700;
+  outline: none !important;
+  width: 80px;
+  margin-left: 3px;
 }
 
 #submit-btn:hover,
