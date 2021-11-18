@@ -10,7 +10,7 @@
     "start": "webpack && qode ./dist/index.js",
     "debug": "webpack && qode --inspect ./dist/index.js",
     "pack": "npm install @nodegui/packer && npx nodegui-packer --init casper-signer-gui",
-    "deploy": "npx nodegui-packer --pack ./dist",
+    "deploy": "npx nodegui-packer --pack ./dist"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.36.0",
