@@ -185,6 +185,8 @@ const sleep = async(
 // initialize
 const win = new QMainWindow();
 win.setWindowTitle("Casper Node Signer");
+const icon_widget = new QIcon("./assets/favicon.png");
+win.setWindowIcon(icon_widget);
 
 
 // header
