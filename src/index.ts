@@ -355,7 +355,6 @@ submit_button.addEventListener('clicked', async () => {
     );
 
     content_message = content_message.trim();
-    console.log(content_message);
   } catch(err) {
     signature.setText('Cannot find message file: '+value_message);
     return false;
