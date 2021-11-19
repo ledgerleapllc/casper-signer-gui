@@ -353,6 +353,8 @@ submit_button.addEventListener('clicked', async () => {
         flag:'r'
       }
     );
+
+    content_message = content_message.trim();
   } catch(err) {
     signature.setText('Cannot find message file: '+value_message);
     return false;
